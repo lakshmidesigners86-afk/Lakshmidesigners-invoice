@@ -175,10 +175,6 @@ async function generatePDF(){
   doc.setFontSize(22);doc.setFont('times','bolditalic');
   doc.text('Lakshmi Designers', cx, 20, {align:'center'});
 
-  // 2. Tagline below brand name — gold
-  doc.setTextColor(212,175,85);
-  doc.setFontSize(7);doc.setFont('helvetica','normal');
-  doc.text('YOUR STYLE,  OUR CRAFT', cx, 29, {align:'center'});
 
   // Thin gold separator
   doc.setDrawColor(212,175,85);doc.setLineWidth(0.25);
