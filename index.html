@@ -80,6 +80,10 @@ body{font-family:Georgia,serif;background:#f3e8ef;min-height:100vh;padding:1.5re
     <div class="fi"><input id="notes" placeholder="e.g. Delivery in 5 days. Advance Rs.500 received."/></div>
   </div>
   <div class="acts">
+    <div class="card" style="margin-top:1.5rem;">
+  <h3>Invoice History</h3>
+  <div id="inv-history"></div>
+</div>
     <button class="bp" onclick="generatePDF()">Download PDF</button>
     <button class="bw" onclick="shareWA()">Share on WhatsApp</button>
     <button class="bc" onclick="clearForm()">Clear</button>
@@ -100,6 +104,7 @@ window.onload=()=>{
   document.getElementById('inv-due').value=du.toISOString().split('T')[0];
   document.getElementById('inv-num').value='LD-'+String(cnt).padStart(3,'0');
   addItem();
+  renderHistory();
 };
 
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',2800);}
@@ -359,6 +364,7 @@ async function generatePDF(){
   cnt++;localStorage.setItem('ldinv7',cnt);
   document.getElementById('inv-num').value='LD-'+String(cnt).padStart(3,'0');
   toast('Invoice downloaded!');
+  saveInvoice(d);
 }
 
 function shareWA(){
@@ -381,6 +387,68 @@ function shareWA(){
   m+='\nThank you for choosing Lakshmi Designers!';
   const p=d.phone.replace(/\D/g,'');
   window.open(p?'https://wa.me/91'+p+'?text='+encodeURIComponent(m):'https://wa.me/?text='+encodeURIComponent(m),'_blank');
+}
+  
+  function saveInvoice(d) {
+  const history = JSON.parse(localStorage.getItem('ld-inv-history') || '[]');
+  history.unshift({
+    num: d.num,
+    date: d.date,
+    name: d.name,
+    phone: d.phone,
+    grand: d.grand,
+    status: d.status,
+    items: d.items,
+    disc: d.disc,
+    notes: d.notes,
+    saved: new Date().toLocaleDateString('en-IN')
+  });
+  localStorage.setItem('ld-inv-history', JSON.stringify(history));
+}
+  function renderHistory() {
+  const history = JSON.parse(localStorage.getItem('ld-inv-history') || '[]');
+  const el = document.getElementById('inv-history');
+  if (!history.length) {
+    el.innerHTML = '<p style="font-size:13px;color:#a06080;text-align:center;padding:1rem;">No invoices yet.</p>';
+    return;
+  }
+  el.innerHTML = history.map((inv, idx) => `
+    <div style="border:0.5px solid #e0c0d0;border-radius:10px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-size:14px;font-weight:bold;color:#2E0B40;">${inv.name}</div>
+        <div style="font-size:11px;color:#a06080;">${inv.num}  |  ${inv.saved}</div>
+      </div>
+      <div style="font-size:14px;font-weight:bold;color:#7B2D5E;">Rs.${inv.grand.toFixed(0)}</div>
+      <div style="display:flex;gap:6px;">
+        <button onclick="reloadInvoice(${idx})" style="padding:5px 12px;border-radius:7px;border:1px solid #e0c0d0;background:transparent;color:#7B2D5E;font-size:12px;cursor:pointer;font-family:Georgia,serif;">Load</button>
+        <button onclick="deleteInvoice(${idx})" style="padding:5px 12px;border-radius:7px;border:1px solid #e0c0d0;background:transparent;color:#A32D2D;font-size:12px;cursor:pointer;font-family:Georgia,serif;">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function reloadInvoice(idx) {
+  const history = JSON.parse(localStorage.getItem('ld-inv-history') || '[]');
+  const inv = history[idx];
+  if (!inv) return;
+  document.getElementById('cust-name').value = inv.name;
+  document.getElementById('cust-phone').value = inv.phone;
+  document.getElementById('inv-status').value = inv.status;
+  document.getElementById('notes').value = inv.notes || '';
+  document.getElementById('disc').value = inv.disc || 0;
+  items = inv.items.map(i => ({...i, id: Date.now() + Math.random()}));
+  render(); calcTotal();
+  toast('Invoice loaded!');
+  window.scrollTo(0, 0);
+}
+
+function deleteInvoice(idx) {
+  if (!confirm('Delete this invoice from history?')) return;
+  const history = JSON.parse(localStorage.getItem('ld-inv-history') || '[]');
+  history.splice(idx, 1);
+  localStorage.setItem('ld-inv-history', JSON.stringify(history));
+  renderHistory();
+  toast('Deleted!');
 }
 
 function clearForm(){
