@@ -187,10 +187,7 @@ async function generatePDF(){
   doc.text('Above Karur Vysya Bank, Gangavathi', cx, 43, {align:'center'});
   doc.text('UPI: '+UPI, cx, 50, {align:'center'});
    doc.setFontSize(10);
-doc.setFont('times','normal');
-doc.text('GSTIN: 29ABCDE1234F1Z5', cx, 26, {align:'center'});
- 
-
+  doc.text('GSTIN: 29ABCDE1234F1Z5', cx, 56, {align:'center'});
   // ══════════════════════════════════════
   // INVOICE META STRIP — single clean color
   doc.setFillColor(240,215,230);
