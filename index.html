@@ -175,7 +175,9 @@ async function generatePDF(){
   doc.setFontSize(22);doc.setFont('times','bolditalic');
   doc.text('Lakshmi Designers', cx, 20, {align:'center'});
 
- 
+  doc.setFontSize(10);
+doc.setFont('times','normal');
+doc.text('GSTIN: 29ABCDE1234F1Z5', cx, 26, {align:'center'});
  
   // Thin gold separator
   doc.setDrawColor(212,175,85);doc.setLineWidth(0.25);
