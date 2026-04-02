@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lakshmi Designers — Invoice</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Georgia,serif;background:#f3e8ef;min-height:100vh;padding:1.5rem;color:#2E0B40;}
+.wrap{max-width:700px;margin:0 auto;}
+.page-title{text-align:center;margin-bottom:1.2rem;}
+.page-title h1{font-size:22px;letter-spacing:4px;color:#7B2D5E;font-weight:bold;}
+.page-title p{font-size:11px;color:#995375;letter-spacing:3px;margin-top:3px;}
+
+/* TAB NAV */
+.tab-nav{display:flex;gap:0;margin-bottom:1.2rem;border-radius:10px;overflow:hidden;border:1px solid #d8b0c8;}
+.tab-btn{flex:1;padding:10px 6px;border:none;background:#fdf0f7;color:#7B2D5E;font-size:13px;cursor:pointer;font-family:Georgia,serif;transition:background 0.2s;}
+.tab-btn.active{background:#7B2D5E;color:#fff;font-weight:bold;}
+.tab-btn:not(:last-child){border-right:1px solid #d8b0c8;}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;}
+
+.card{background:#fff;border:0.5px solid #e0c0d0;border-radius:14px;padding:1.2rem;margin-bottom:1rem;}
+.card h3{font-size:11px;color:#7B2D5E;text-transform:uppercase;letter-spacing:2px;margin-bottom:.9rem;padding-bottom:7px;border-bottom:0.5px solid #f0dde8;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fi{display:flex;flex-direction:column;gap:4px;position:relative;}
+.fi label{font-size:10px;color:#a06080;text-transform:uppercase;letter-spacing:1px;}
+.fi input,.fi select{font-size:14px;padding:8px 11px;border-radius:7px;border:1px solid #e0c0d0;background:#fdf8fb;color:#2E0B40;font-family:Georgia,serif;outline:none;width:100%;}
+.fi input:focus,.fi select:focus{border-color:#7B2D5E;}
+
+/* AUTOCOMPLETE */
+.ac-dropdown{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #c090b0;border-radius:7px;z-index:99;max-height:160px;overflow-y:auto;box-shadow:0 4px 16px #d8a0c040;}
+.ac-item{padding:8px 12px;cursor:pointer;font-size:13px;color:#2E0B40;border-bottom:0.5px solid #f0dde8;}
+.ac-item:last-child{border-bottom:none;}
+.ac-item:hover{background:#fdf0f7;}
+.ac-item span{font-size:11px;color:#a06080;margin-left:6px;}
+
+.ih{display:grid;grid-template-columns:3fr 55px 85px 85px 26px;gap:6px;padding:7px 10px;background:#f7e8f2;border-radius:7px;margin-bottom:7px;}
+.ih span{font-size:10px;color:#7B2D5E;text-transform:uppercase;letter-spacing:1px;}
+.ir{display:grid;grid-template-columns:3fr 55px 85px 85px 26px;gap:6px;align-items:center;margin-bottom:7px;}
+.ir input{font-size:13px;padding:7px 9px;border-radius:7px;border:1px solid #e0c0d0;background:#fdf8fb;color:#2E0B40;font-family:Georgia,serif;outline:none;width:100%;}
+.it{font-size:13px;color:#2E0B40;font-weight:bold;text-align:right;}
+.rb{background:none;border:none;color:#c04040;cursor:pointer;font-size:17px;padding:0;}
+.add-btn{width:100%;padding:8px;border:1.5px dashed #c090b0;border-radius:7px;background:transparent;color:#7B2D5E;font-size:13px;cursor:pointer;font-family:Georgia,serif;margin-top:3px;}
+.add-btn:hover{background:#fdf0f7;}
+.tots{display:flex;flex-direction:column;align-items:flex-end;gap:5px;margin-top:12px;padding-top:10px;border-top:0.5px solid #f0dde8;}
+.tr{display:flex;justify-content:space-between;font-size:13px;min-width:210px;}
+.tr span:first-child{color:#a06080;}
+.tg{font-size:16px;font-weight:bold;color:#7B2D5E;}
+.acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:1.5rem;}
+.bp{flex:1;padding:11px;border-radius:9px;border:none;background:#7B2D5E;color:#fff;font-size:14px;cursor:pointer;font-family:Georgia,serif;}
+.bp:hover{background:#5C1A6B;}
+.bw{flex:1;padding:11px;border-radius:9px;border:none;background:#25D366;color:#fff;font-size:14px;cursor:pointer;font-family:Georgia,serif;}
+.bw:hover{background:#128C7E;}
+.bc{padding:11px 18px;border-radius:9px;border:1px solid #e0c0d0;background:transparent;color:#a06080;font-size:14px;cursor:pointer;font-family:Georgia,serif;}
+.bs{flex:1;padding:11px;border-radius:9px;border:none;background:#E8701A;color:#fff;font-size:14px;cursor:pointer;font-family:Georgia,serif;}
+.bs:hover{background:#c55a10;}
+
+/* CONTACTS TAB */
+.contact-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;}
+.contact-form input{font-size:13px;padding:8px 11px;border-radius:7px;border:1px solid #e0c0d0;background:#fdf8fb;color:#2E0B40;font-family:Georgia,serif;outline:none;}
+.contact-form input:focus{border-color:#7B2D5E;}
+.save-contact-btn{grid-column:1/-1;padding:9px;border-radius:7px;border:none;background:#7B2D5E;color:#fff;font-size:13px;cursor:pointer;font-family:Georgia,serif;}
+.contact-list{display:flex;flex-direction:column;gap:8px;}
+.contact-card{background:#fdf8fb;border:0.5px solid #e0c0d0;border-radius:9px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;}
+.contact-info{flex:1;}
+.contact-name{font-size:14px;font-weight:bold;color:#2E0B40;}
+.contact-phone{font-size:12px;color:#a06080;margin-top:2px;}
+.contact-actions{display:flex;gap:8px;}
+.use-btn{padding:5px 12px;border-radius:6px;border:none;background:#7B2D5E;color:#fff;font-size:12px;cursor:pointer;font-family:Georgia,serif;}
+.del-btn{padding:5px 10px;border-radius:6px;border:none;background:#f5e0e8;color:#c04040;font-size:12px;cursor:pointer;font-family:Georgia,serif;}
+.empty-state{text-align:center;padding:2rem;color:#b08090;font-size:13px;}
+
+/* SAVED INVOICES TAB */
+.inv-list{display:flex;flex-direction:column;gap:10px;}
+.inv-card{background:#fdf8fb;border:0.5px solid #e0c0d0;border-radius:10px;padding:12px 14px;}
+.inv-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.inv-num-label{font-size:13px;font-weight:bold;color:#7B2D5E;}
+.inv-date-label{font-size:11px;color:#a06080;}
+.inv-customer{font-size:14px;color:#2E0B40;font-weight:bold;}
+.inv-items-preview{font-size:11px;color:#a06080;margin-top:3px;}
+.inv-amount{font-size:16px;font-weight:bold;color:#2E0B40;text-align:right;}
+.inv-status-badge{font-size:10px;padding:3px 9px;border-radius:20px;font-weight:bold;text-align:center;margin-top:4px;}
+.badge-paid{background:#d4f5e2;color:#1a7a40;}
+.badge-pending{background:#fde8e8;color:#a03030;}
+.badge-advance{background:#fef3d5;color:#8a6000;}
+.inv-card-actions{display:flex;gap:8px;margin-top:10px;border-top:0.5px solid #f0dde8;padding-top:10px;}
+.inv-act-btn{flex:1;padding:7px;border-radius:7px;border:none;font-size:12px;cursor:pointer;font-family:Georgia,serif;}
+.inv-pdf-btn{background:#7B2D5E;color:#fff;}
+.inv-wa-btn{background:#25D366;color:#fff;}
+.inv-del-btn{background:#f5e0e8;color:#c04040;flex:0;padding:7px 12px;}
+.inv-load-btn{background:#f0e4f7;color:#7B2D5E;}
+
+.search-bar{width:100%;padding:9px 12px;border-radius:8px;border:1px solid #e0c0d0;background:#fdf8fb;color:#2E0B40;font-family:Georgia,serif;font-size:13px;margin-bottom:1rem;outline:none;}
+.search-bar:focus{border-color:#7B2D5E;}
+.count-badge{font-size:11px;color:#a06080;margin-bottom:.8rem;}
+
+#qr-hidden{position:absolute;left:-9999px;top:0;}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#2E0B40;color:#fff;padding:11px 22px;border-radius:9px;font-size:13px;display:none;z-index:9999;font-family:Georgia,serif;}
+@media(max-width:480px){
+  .fg{grid-template-columns:1fr;}
+  .ih,.ir{grid-template-columns:2fr 46px 72px 72px 22px;}
+  .acts{flex-direction:column;}
+  .contact-form{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="page-title">
+    <h1>Lakshmi Designers</h1>
+    <p>✦ INVOICE & CONTACTS ✦</p>
+    <p style="font-size:10px;color:#7B2D5E;letter-spacing:2px;margin-top:4px;">GST No: 29BGQPL5870E1ZV</p>
+  </div>
+
+  <!-- TAB NAVIGATION -->
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('invoice')">🧾 New Invoice</button>
+    <button class="tab-btn" onclick="switchTab('saved')">📂 Saved Invoices</button>
+    <button class="tab-btn" onclick="switchTab('contacts')">👥 Contacts</button>
+  </div>
+
+  <!-- ═══════════════════ INVOICE TAB ═══════════════════ -->
+  <div id="tab-invoice" class="tab-pane active">
+    <div class="card">
+      <h3>Invoice Details</h3>
+      <div class="fg">
+        <div class="fi"><label>Invoice No</label><input id="inv-num"/></div>
+        <div class="fi"><label>Date</label><input type="date" id="inv-date"/></div>
+        <div class="fi"><label>Due Date</label><input type="date" id="inv-due"/></div>
+        <div class="fi"><label>Status</label>
+          <select id="inv-status"><option>Pending</option><option>Paid</option><option>Advance Paid</option></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Customer Details</h3>
+      <div class="fg">
+        <div class="fi" style="position:relative;">
+          <label>Name</label>
+          <input id="cust-name" placeholder="Type name or search contacts..." autocomplete="off" oninput="acSearch(this.value)"/>
+          <div id="ac-list" class="ac-dropdown" style="display:none;"></div>
+        </div>
+        <div class="fi"><label>Phone</label><input id="cust-phone" placeholder="9876543210" type="tel"/></div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+        <button onclick="saveCurrentContact()" style="padding:6px 14px;border-radius:6px;border:1px solid #c090b0;background:transparent;color:#7B2D5E;font-size:12px;cursor:pointer;font-family:Georgia,serif;">💾 Save as Contact</button>
+        <span style="font-size:11px;color:#b08090;">Save customer for quick access next time</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Order Items</h3>
+      <div class="ih"><span>Description</span><span>Qty</span><span>Price</span><span style="text-align:right">Total</span><span></span></div>
+      <div id="ilist"></div>
+      <button class="add-btn" onclick="addItem()">+ Add Item</button>
+      <div class="tots">
+        <div class="tr"><span>Subtotal</span><span id="sub">₹0</span></div>
+        <div class="tr"><span>Discount (₹)</span><span><input id="disc" type="number" min="0" value="0" oninput="calcTotal()" style="width:75px;padding:4px 8px;font-size:12px;border-radius:6px;border:1px solid #e0c0d0;background:#fdf8fb;color:#2E0B40;font-family:Georgia,serif;text-align:right;"/></span></div>
+        <div class="tr tg"><span>Total</span><span id="gtotal">₹0</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Notes (optional)</h3>
+      <div class="fi"><input id="notes" placeholder="e.g. Delivery in 5 days. Advance ₹500 received."/></div>
+    </div>
+
+    <div class="acts">
+      <button class="bp" onclick="generatePDF()">⬇ Download PDF</button>
+      <button class="bw" onclick="shareWA()">💬 Share on WhatsApp</button>
+      <button class="bs" onclick="saveInvoice()">💾 Save Invoice</button>
+      <button class="bc" onclick="clearForm()">Clear</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ SAVED INVOICES TAB ═══════════════════ -->
+  <div id="tab-saved" class="tab-pane">
+    <div class="card">
+      <h3>Saved Invoices</h3>
+      <input class="search-bar" id="inv-search" placeholder="Search by name, invoice no, status..." oninput="renderSavedInvoices()"/>
+      <div class="count-badge" id="inv-count"></div>
+      <div class="inv-list" id="inv-list"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ CONTACTS TAB ═══════════════════ -->
+  <div id="tab-contacts" class="tab-pane">
+    <div class="card">
+      <h3>Add New Contact</h3>
+      <div class="contact-form">
+        <input id="new-name" placeholder="Customer Name" />
+        <input id="new-phone" placeholder="Phone Number" type="tel"/>
+        <button class="save-contact-btn" onclick="addContact()">+ Save Contact</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Contacts</h3>
+      <input class="search-bar" id="ct-search" placeholder="Search contacts..." oninput="renderContacts()"/>
+      <div class="count-badge" id="ct-count"></div>
+      <div class="contact-list" id="contact-list"></div>
+    </div>
+  </div>
+</div>
+
+<div id="qr-hidden"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const UPI='lakshmidesigners861@axl';
+const LOGO='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAYAAAB5fY51AAEAAElEQVR4nOz9d7xlx3UeiH6r9j7n3NAR3UAjRyIn5hwlBlGkMi1ZskeybD3Jlv2zx/bMm+cJst88j/3keZYs27KSJSqQFClSTCIIgiABgiASiUSAyBmNboSON57YOefW3mvVH6tW7X3OvSBIM1BMIASSe869Z+/qvaqq3/p+K0543xs3IKAJBgx6VQ8AsLT3MO+84VY8dtt92P/QEzj07AGM14bgcQNDBkQEMgwiAgAYAsoQDCoAAJF8KHwAwJie/w3vj/1zAwCqlH8JQ0ThvY4zf+fiQRIfvH/Jc4zDx2fYPzMh7iQ8VBkAEDg+A8FF4/NAgPOFJH8uPhcaMAAY7if5/KXp6HA6D7r8Urguf+U4APj8d6XBzIU8xD6SBdnQlcK5Zy5OovhbysTMWRzdv9vvKMTFHN8z+8fESThmTr6Ls9am8VoLFwUl7yVM8G85iTOmAUgWkvDW9SiW32hc3Vg3NiW8tdbFySYJ7/7GZ7q8Oh/iv+GYP+s8peln9RLLacEMWN8+2p+1AFufDuRdA2sZVFcYLM5i157dOOXcs3HOGy7GBa+8DJgjFx9bGHbjxgKgyvc9X09kuWEKjUewYDQTi15VAwZ46s5HcfWnP4/br/8alo4ewbghq776VQ1DhFQudiMyUDEyjgkf/I7jGGOyge35b4YboJbOPQOwkpYrQBOAfSQIgCkAQhzY+bMO9TkYQ0I86hRIBY3pJ1M/pZ+BXdawDJQpOwFKhXSm+Skx7aaRPJjqQdcPO+o+wlMHKgZTnqflFa5LwE7AXAOY/Js+sV8LFYB5gFhWqBXd5Z0M+NQPZQIA7kBBATYsRWAXBSyISKAnRCJkETLKmCaAJkgq1AkzsMKl7Mc8bJMlCGPVRZqhYMBICtVpKgqiAJi2rBrAAAbTQB0pJDJi7oHXDKSQoMYxJjGNAaLPSDOwD2E5RkQo6vy5INa0bfaJdpgtE1RMRqhAUJPEUamtpM+CwBpbOH5PalTtBuoYI5KpKVbbp/mFvqagGaCmM7A7Pz63KiKQDFuqotMgCWO5sR8D/n4Xk8hbGAGZhNqVfSqgGpBniEVAXAFB8MMZV+KNf6kbqnmG0bWRQCQfEYcDIImpSqJidkLKRuAGS80VFU7xUULBoRmXR9foCJSRRxAYCM7gAKrAFMFQpYOAJbXAGPAhkIA+yNisoV3bpBaYL8PZFCQbHqQmYSSjfqSWqApqxfBaqG+HFvJ5KI0aTAoUuDRd9MFcNB+FGODCeWpnWf4XQYH5GY+WyGv4NNgAAAABJRU5ErkJggg==';
+
+// ═══════════════════════════════════════════════
+// STORAGE HELPERS
+// ═══════════════════════════════════════════════
+function loadContacts(){try{return JSON.parse(localStorage.getItem('ld_contacts')||'[]');}catch(e){return[];}}
+function saveContacts(arr){localStorage.setItem('ld_contacts',JSON.stringify(arr));}
+function loadInvoices(){try{return JSON.parse(localStorage.getItem('ld_invoices')||'[]');}catch(e){return[];}}
+function saveInvoices(arr){localStorage.setItem('ld_invoices',JSON.stringify(arr));}
+
+// ═══════════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════════
+function switchTab(tab){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  event.target.classList.add('active');
+  if(tab==='contacts') renderContacts();
+  if(tab==='saved') renderSavedInvoices();
+}
+
+// ═══════════════════════════════════════════════
+// INVOICE FORM
+// ═══════════════════════════════════════════════
+let items=[];
+let cnt=parseInt(localStorage.getItem('ldinv7')||'1');
+
+window.onload=()=>{
+  const t=new Date().toISOString().split('T')[0];
+  const du=new Date();du.setDate(du.getDate()+7);
+  document.getElementById('inv-date').value=t;
+  document.getElementById('inv-due').value=du.toISOString().split('T')[0];
+  document.getElementById('inv-num').value='LD-'+String(cnt).padStart(3,'0');
+  addItem();
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('.fi')) document.getElementById('ac-list').style.display='none';
+  });
+};
+
+function toast(m){
+  const t=document.getElementById('toast');
+  t.textContent=m;t.style.display='block';
+  setTimeout(()=>t.style.display='none',2800);
+}
+
+function addItem(){items.push({id:Date.now(),desc:'',qty:1,price:0});render();}
+function removeItem(id){items=items.filter(i=>i.id!==id);render();calcTotal();}
+function upd(id,f,v){
+  const i=items.find(x=>x.id===id);if(!i)return;
+  i[f]=(f==='qty'||f==='price')?parseFloat(v)||0:v;
+  calcTotal();
+  const e=document.getElementById('it'+id);
+  if(e)e.textContent='₹'+((i.qty||0)*(i.price||0)).toFixed(0);
+}
+function render(){
+  document.getElementById('ilist').innerHTML=items.map(i=>
+    '<div class="ir">'+
+    '<input placeholder="e.g. Blouse stitching" value="'+i.desc+'" oninput="upd('+i.id+',\'desc\',this.value)"/>'+
+    '<input type="number" min="1" value="'+i.qty+'" oninput="upd('+i.id+',\'qty\',this.value)"/>'+
+    '<input type="number" min="0" value="'+(i.price||'')+'" placeholder="0" oninput="upd('+i.id+',\'price\',this.value)"/>'+
+    '<span class="it" id="it'+i.id+'">₹'+((i.qty||0)*(i.price||0)).toFixed(0)+'</span>'+
+    '<button class="rb" onclick="removeItem('+i.id+')">×</button>'+
+    '</div>'
+  ).join('');calcTotal();
+}
+function calcTotal(){
+  const s=items.reduce((a,i)=>a+((i.qty||0)*(i.price||0)),0);
+  const d=parseFloat(document.getElementById('disc').value)||0;
+  document.getElementById('sub').textContent='₹'+s.toFixed(0);
+  document.getElementById('gtotal').textContent='₹'+Math.max(0,s-d).toFixed(0);
+}
+function getData(){
+  const s=items.reduce((a,i)=>a+((i.qty||0)*(i.price||0)),0);
+  const d=parseFloat(document.getElementById('disc').value)||0;
+  return{
+    num:document.getElementById('inv-num').value||'LD-001',
+    date:document.getElementById('inv-date').value,
+    due:document.getElementById('inv-due').value,
+    status:document.getElementById('inv-status').value,
+    name:document.getElementById('cust-name').value||'Customer',
+    phone:document.getElementById('cust-phone').value||'',
+    notes:document.getElementById('notes').value||'',
+    items:[...items],disc:d,sub:s,grand:Math.max(0,s-d),
+    savedAt:new Date().toISOString()
+  };
+}
+
+// ═══════════════════════════════════════════════
+// AUTOCOMPLETE
+// ═══════════════════════════════════════════════
+function acSearch(q){
+  const box=document.getElementById('ac-list');
+  if(!q||q.length<1){box.style.display='none';return;}
+  const contacts=loadContacts();
+  const matches=contacts.filter(c=>
+    c.name.toLowerCase().includes(q.toLowerCase())||
+    (c.phone&&c.phone.includes(q))
+  ).slice(0,6);
+  if(matches.length===0){box.style.display='none';return;}
+  box.innerHTML=matches.map(c=>
+    '<div class="ac-item" onclick="fillContact(\''+escQ(c.name)+'\',\''+escQ(c.phone||'')+'\')">'+
+    c.name+'<span>'+( c.phone||'')+'</span></div>'
+  ).join('');
+  box.style.display='block';
+}
+function escQ(s){return s.replace(/'/g,"\\'");}
+function fillContact(name,phone){
+  document.getElementById('cust-name').value=name;
+  document.getElementById('cust-phone').value=phone;
+  document.getElementById('ac-list').style.display='none';
+}
+
+// ═══════════════════════════════════════════════
+// CONTACTS
+// ═══════════════════════════════════════════════
+function saveCurrentContact(){
+  const name=document.getElementById('cust-name').value.trim();
+  const phone=document.getElementById('cust-phone').value.trim();
+  if(!name){toast('Customer name enter cheyyi!');return;}
+  const contacts=loadContacts();
+  const existing=contacts.find(c=>c.name.toLowerCase()===name.toLowerCase());
+  if(existing){
+    existing.phone=phone;
+    saveContacts(contacts);
+    toast('Contact updated: '+name);
+  } else {
+    contacts.unshift({id:Date.now(),name,phone});
+    saveContacts(contacts);
+    toast('Contact saved: '+name);
+  }
+}
+
+function addContact(){
+  const name=document.getElementById('new-name').value.trim();
+  const phone=document.getElementById('new-phone').value.trim();
+  if(!name){toast('Name enter cheyyi!');return;}
+  const contacts=loadContacts();
+  const existing=contacts.find(c=>c.name.toLowerCase()===name.toLowerCase());
+  if(existing){toast('Contact already exists!');return;}
+  contacts.unshift({id:Date.now(),name,phone});
+  saveContacts(contacts);
+  document.getElementById('new-name').value='';
+  document.getElementById('new-phone').value='';
+  renderContacts();
+  toast('Contact saved!');
+}
+
+function deleteContact(id){
+  if(!confirm('Delete this contact?')) return;
+  const contacts=loadContacts().filter(c=>c.id!==id);
+  saveContacts(contacts);
+  renderContacts();
+  toast('Contact deleted.');
+}
+
+function useContact(name,phone){
+  document.getElementById('cust-name').value=name;
+  document.getElementById('cust-phone').value=phone;
+  // Switch to invoice tab
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-invoice').classList.add('active');
+  document.querySelector('.tab-btn').classList.add('active');
+  toast('Contact loaded!');
+}
+
+function renderContacts(){
+  const q=(document.getElementById('ct-search')||{value:''}).value.toLowerCase();
+  const contacts=loadContacts();
+  const filtered=q?contacts.filter(c=>
+    c.name.toLowerCase().includes(q)||(c.phone&&c.phone.includes(q))
+  ):contacts;
+  document.getElementById('ct-count').textContent=filtered.length+' contact'+(filtered.length!==1?'s':'');
+  const box=document.getElementById('contact-list');
+  if(filtered.length===0){
+    box.innerHTML='<div class="empty-state">No contacts saved yet.<br>Add customers here for quick access.</div>';return;
+  }
+  box.innerHTML=filtered.map(c=>`
+    <div class="contact-card">
+      <div class="contact-info">
+        <div class="contact-name">${c.name}</div>
+        <div class="contact-phone">${c.phone||'No phone'}</div>
+      </div>
+      <div class="contact-actions">
+        <button class="use-btn" onclick="useContact('${escQ(c.name)}','${escQ(c.phone||'')}')">Use</button>
+        <button class="del-btn" onclick="deleteContact(${c.id})">Del</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════
+// SAVE & LOAD INVOICES
+// ═══════════════════════════════════════════════
+function saveInvoice(){
+  const d=getData();
+  if(d.name==='Customer'){toast('Customer name enter cheyyi!');return;}
+  const invoices=loadInvoices();
+  // Check if same invoice number exists → update
+  const idx=invoices.findIndex(i=>i.num===d.num);
+  if(idx>=0){
+    invoices[idx]=d;
+    saveInvoices(invoices);
+    toast('Invoice updated: '+d.num);
+  } else {
+    invoices.unshift(d);
+    saveInvoices(invoices);
+    // advance counter
+    cnt++;localStorage.setItem('ldinv7',cnt);
+    document.getElementById('inv-num').value='LD-'+String(cnt).padStart(3,'0');
+    toast('Invoice saved: '+d.num);
+  }
+}
+
+function loadInvoiceToForm(inv){
+  document.getElementById('inv-num').value=inv.num;
+  document.getElementById('inv-date').value=inv.date;
+  document.getElementById('inv-due').value=inv.due||'';
+  document.getElementById('inv-status').value=inv.status;
+  document.getElementById('cust-name').value=inv.name;
+  document.getElementById('cust-phone').value=inv.phone||'';
+  document.getElementById('notes').value=inv.notes||'';
+  document.getElementById('disc').value=inv.disc||0;
+  items=inv.items.map(i=>({...i,id:Date.now()+Math.random()}));
+  render();
+  // Switch to invoice tab
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-invoice').classList.add('active');
+  document.querySelector('.tab-btn').classList.add('active');
+  toast('Invoice loaded: '+inv.num);
+}
+
+function deleteInvoice(num){
+  if(!confirm('Delete invoice '+num+'?')) return;
+  const invoices=loadInvoices().filter(i=>i.num!==num);
+  saveInvoices(invoices);
+  renderSavedInvoices();
+  toast('Invoice deleted.');
+}
+
+function renderSavedInvoices(){
+  const q=(document.getElementById('inv-search')||{value:''}).value.toLowerCase();
+  const invoices=loadInvoices();
+  const filtered=q?invoices.filter(i=>
+    i.num.toLowerCase().includes(q)||
+    i.name.toLowerCase().includes(q)||
+    i.status.toLowerCase().includes(q)
+  ):invoices;
+  document.getElementById('inv-count').textContent=filtered.length+' invoice'+(filtered.length!==1?'s':'');
+  const box=document.getElementById('inv-list');
+  if(filtered.length===0){
+    box.innerHTML='<div class="empty-state">No saved invoices yet.<br>Create an invoice and click "Save Invoice".</div>';return;
+  }
+  box.innerHTML=filtered.map(inv=>{
+    const sc=inv.status==='Paid'?'badge-paid':inv.status==='Advance Paid'?'badge-advance':'badge-pending';
+    const itemsPreview=inv.items.filter(i=>i.desc).slice(0,2).map(i=>i.desc).join(', ')+(inv.items.filter(i=>i.desc).length>2?'…':'');
+    return`<div class="inv-card">
+      <div class="inv-card-top">
+        <div>
+          <div class="inv-num-label">${inv.num}</div>
+          <div class="inv-customer">${inv.name}</div>
+          <div class="inv-items-preview">${itemsPreview||'No items'}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="inv-amount">₹${Number(inv.grand||0).toFixed(0)}</div>
+          <div class="inv-status-badge ${sc}">${inv.status}</div>
+          <div style="font-size:10px;color:#b08090;margin-top:4px;">${fdate(inv.date)}</div>
+        </div>
+      </div>
+      <div class="inv-card-actions">
+        <button class="inv-act-btn inv-load-btn" onclick="loadInvoiceToForm(${JSON.stringify(inv).replace(/"/g,'&quot;')})">✏ Edit</button>
+        <button class="inv-act-btn inv-pdf-btn" onclick="generatePDFFromData(${JSON.stringify(inv).replace(/"/g,'&quot;')})">⬇ PDF</button>
+        <button class="inv-act-btn inv-wa-btn" onclick="shareWAFromData(${JSON.stringify(inv).replace(/"/g,'&quot;')})">💬 WA</button>
+        <button class="inv-act-btn inv-del-btn" onclick="deleteInvoice('${inv.num}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// PDF & WHATSAPP
+// ═══════════════════════════════════════════════
+function upiUrl(amt,name,num){return 'upi://pay?pa='+UPI+'&pn='+encodeURIComponent('Lakshmi Designers')+'&am='+amt.toFixed(2)+'&cu=INR&tn='+encodeURIComponent('Invoice '+num+' - '+name);}
+function fdate(d){if(!d)return'-';const[y,m,day]=d.split('-');return day+'/'+m+'/'+y;}
+function genQR(txt){return new Promise(r=>{const div=document.getElementById('qr-hidden');div.innerHTML='';new QRCode(div,{text:txt,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});setTimeout(()=>{const c=div.querySelector('canvas'),i=div.querySelector('img');r(c?c.toDataURL('image/png'):i?i.src:null);},500);});}
+
+async function generatePDF(){
+  const d=getData();
+  if(d.name==='Customer'){toast('Customer name enter cheyyi!');return;}
+  toast('Generating invoice...');
+  await buildPDF(d);
+}
+async function generatePDFFromData(d){
+  toast('Generating PDF...');
+  await buildPDF(d);
+}
+
+async function buildPDF(d){
+  const qr=await genQR(upiUrl(d.grand,d.name,d.num));
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const W=210,H=297,L=14,R=14,CW=W-L-R;
+  const BG=[62,10,50];
+  doc.setFillColor(...BG);doc.rect(0,0,W,66,'F');
+  doc.setDrawColor(212,175,85);doc.setLineWidth(0.6);
+  doc.line(0,1.5,W,1.5);doc.line(0,64.5,W,64.5);
+  doc.setLineWidth(0.25);doc.line(7,3,7,62);doc.line(W-7,3,W-7,62);
+  function diamond(cx,cy,s){doc.setFillColor(212,175,85);doc.triangle(cx,cy-s,cx+s,cy,cx,cy+s,'F');doc.triangle(cx,cy-s,cx-s,cy,cx,cy+s,'F');}
+  diamond(7,3,2.2);diamond(W-7,3,2.2);diamond(7,62,2.2);diamond(W-7,62,2.2);
+  try{doc.addImage(LOGO,'PNG',10,5,44,44);}catch(e){}
+  const cx=10+44+4+(W-(10+44+4)-7)/2;
+  doc.setTextColor(255,225,170);doc.setFontSize(22);doc.setFont('times','bolditalic');
+  doc.text('Lakshmi Designers',cx,20,{align:'center'});
+  doc.setDrawColor(212,175,85);doc.setLineWidth(0.25);doc.line(cx-32,31,cx+32,31);
+  doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(210,175,200);
+  doc.text('Bus Stand Road, Near Patil Nursing Home',cx,37,{align:'center'});
+  doc.text('Above Karur Vysya Bank, Gangavathi',cx,43,{align:'center'});
+  doc.text('UPI: '+UPI,cx,50,{align:'center'});
+  doc.setFontSize(10);doc.text('GSTIN: 29BGQPL5870E1ZV',cx,56,{align:'center'});
+  doc.setFillColor(240,215,230);doc.rect(0,66,W,14,'F');
+  doc.setDrawColor(200,155,180);doc.setLineWidth(0.2);doc.line(0,66,W,66);doc.line(0,80,W,80);
+  doc.setTextColor(120,50,90);doc.setFontSize(7);doc.setFont('helvetica','bold');
+  doc.text('INVOICE NO',L+2,72);doc.text('DATE',L+52,72);doc.text('DUE DATE',L+98,72);doc.text('STATUS',L+152,72);
+  doc.setTextColor(40,5,55);doc.setFontSize(9);doc.setFont('helvetica','bold');
+  doc.text(d.num,L+2,78);doc.text(fdate(d.date),L+52,78);doc.text(fdate(d.due),L+98,78);
+  const sc=d.status==='Paid'?[22,150,90]:d.status==='Advance Paid'?[190,120,10]:[160,30,30];
+  doc.setFillColor(...sc);doc.roundedRect(L+150,70,30,8,1.5,1.5,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(6.5);doc.setFont('helvetica','bold');
+  const stxt=d.status==='Advance Paid'?'ADV.PAID':d.status.toUpperCase();
+  doc.text(stxt,L+165,75.5,{align:'center'});
+  let y=92;
+  doc.setTextColor(120,50,90);doc.setFontSize(7);doc.setFont('helvetica','bold');doc.text('BILL TO',L,y);
+  doc.setDrawColor(212,175,85);doc.setLineWidth(0.4);doc.line(L,y+1.5,L+17,y+1.5);
+  doc.setTextColor(40,5,55);doc.setFontSize(14);doc.setFont('times','bold');doc.text(d.name,L,y+9);
+  if(d.phone){doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(100,50,80);doc.text('Phone: '+d.phone,L,y+17);}
+  y=118;
+  doc.setFillColor(...BG);doc.rect(L,y,CW,11,'F');
+  doc.setTextColor(255,225,170);doc.setFontSize(8);doc.setFont('helvetica','bold');
+  doc.text('DESCRIPTION',L+3,y+7.5);doc.text('QTY',L+108,y+7.5,{align:'right'});
+  doc.text('UNIT PRICE',L+142,y+7.5,{align:'right'});doc.text('AMOUNT',L+CW,y+7.5,{align:'right'});
+  y+=11;
+  const valid=d.items.filter(i=>i.desc||i.price);
+  valid.forEach((item,idx)=>{
+    const rh=11;
+    doc.setFillColor(idx%2===0?252:255,idx%2===0?244:255,idx%2===0?249:255);
+    doc.rect(L,y,CW,rh,'F');
+    doc.setDrawColor(225,200,215);doc.setLineWidth(0.15);doc.line(L,y+rh,L+CW,y+rh);
+    doc.setTextColor(40,5,55);doc.setFontSize(10);doc.setFont('helvetica','normal');
+    doc.text(item.desc||'-',L+3,y+7.5);
+    doc.text(String(item.qty||1),L+108,y+7.5,{align:'right'});
+    doc.text('₹'+Number(item.price||0).toFixed(0),L+142,y+7.5,{align:'right'});
+    doc.setFont('helvetica','bold');
+    doc.text('₹'+Number((item.qty||0)*(item.price||0)).toFixed(0),L+CW,y+7.5,{align:'right'});
+    y+=rh;
+  });
+  doc.setDrawColor(...BG);doc.setLineWidth(0.3);doc.line(L,y,L+CW,y);
+  y+=9;
+  const tx=L+CW-72;
+  function trow(lbl,val){doc.setFontSize(10);doc.setFont('helvetica','normal');doc.setTextColor(120,50,90);doc.text(lbl,tx,y);doc.setTextColor(40,5,55);doc.text(val,L+CW,y,{align:'right'});y+=8;}
+  trow('Subtotal','₹'+d.sub.toFixed(0));
+  if(d.disc>0)trow('Discount','- ₹'+d.disc.toFixed(0));
+  doc.setFillColor(...BG);doc.roundedRect(tx-3,y-2,CW-(tx-L)+3,13,2,2,'F');
+  doc.setDrawColor(212,175,85);doc.setLineWidth(0.5);doc.roundedRect(tx-3,y-2,CW-(tx-L)+3,13,2,2,'S');
+  doc.setTextColor(255,225,170);doc.setFontSize(12);doc.setFont('times','bolditalic');
+  doc.text('Total',tx+1,y+7);doc.setFont('helvetica','bold');doc.setFontSize(12);
+  doc.text('₹ '+d.grand.toFixed(0),L+CW-1,y+7,{align:'right'});y+=20;
+  const boxH=70;const footerH=18;const neededSpace=boxH+footerH+10;
+  if(y+neededSpace>H){doc.addPage();y=20;}
+  doc.setFillColor(252,244,249);doc.roundedRect(L,y,CW,boxH,3,3,'F');
+  doc.setDrawColor(212,175,85);doc.setLineWidth(0.5);doc.roundedRect(L,y,CW,boxH,3,3,'S');
+  doc.setFillColor(...BG);doc.roundedRect(L,y,CW,11,3,3,'F');doc.rect(L,y+5,CW,6,'F');
+  doc.setTextColor(255,225,170);doc.setFontSize(9);doc.setFont('times','bolditalic');
+  doc.text('Payment Details',W/2,y+7.5,{align:'center'});
+  const lx=L+7;
+  doc.setTextColor(100,40,75);doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.text('PAY VIA UPI',lx,y+20);
+  doc.setDrawColor(212,175,85);doc.setLineWidth(0.3);doc.line(lx,y+21.5,lx+22,y+21.5);
+  doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(40,5,55);doc.text('UPI ID:',lx,y+29);
+  doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.text(UPI,lx,y+36);
+  doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.text('Amount:',lx,y+45);
+  doc.setFontSize(13);doc.setFont('times','bold');doc.setTextColor(62,10,50);doc.text('₹ '+d.grand.toFixed(0),lx,y+54);
+  doc.setFontSize(7.5);doc.setFont('helvetica','normal');doc.setTextColor(120,50,90);
+  doc.text('GPay / PhonePe / Paytm / Any UPI App',lx,y+62);
+  doc.setDrawColor(212,175,85);doc.setLineWidth(0.3);doc.line(W/2+2,y+14,W/2+2,y+boxH-4);
+  if(qr){const qrX=W/2+8;const qrY=y+13;const qrS=43;doc.addImage(qr,'PNG',qrX,qrY,qrS,qrS);doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(120,50,90);doc.text('Scan to pay',qrX+qrS/2,qrY+qrS+5,{align:'center'});}
+  if(d.notes){y+=boxH+8;doc.setFillColor(252,244,249);doc.roundedRect(L,y,CW,15,2,2,'F');doc.setDrawColor(220,180,205);doc.setLineWidth(0.2);doc.roundedRect(L,y,CW,15,2,2,'S');doc.setTextColor(120,50,90);doc.setFontSize(7);doc.setFont('helvetica','bold');doc.text('NOTE',L+4,y+6);doc.setFont('helvetica','normal');doc.setTextColor(40,5,55);doc.setFontSize(9);doc.text(d.notes,L+4,y+12);}
+  const cH=doc.internal.pageSize.getHeight();
+  doc.setFillColor(...BG);doc.rect(0,cH-18,W,18,'F');
+  doc.setDrawColor(212,175,85);doc.setLineWidth(0.4);doc.line(0,cH-18,W,cH-18);
+  doc.setTextColor(212,175,85);doc.setFontSize(9);doc.setFont('times','bolditalic');
+  doc.text('Thank you for choosing Lakshmi Designers',W/2,cH-10,{align:'center'});
+  doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(200,160,185);
+  doc.text('Bus Stand Road, Gangavathi  |  UPI: '+UPI,W/2,cH-4,{align:'center'});
+  doc.save('Invoice-'+d.num+'-'+d.name+'.pdf');
+  toast('PDF downloaded!');
+}
+
+function shareWA(){const d=getData();if(d.name==='Customer'){toast('Customer name enter cheyyi!');return;}buildWA(d);}
+function shareWAFromData(d){buildWA(d);}
+function buildWA(d){
+  let m='*Invoice - Lakshmi Designers*\nBus Stand Road, Gangavathi\n';
+  m+='--------------------------------\n';
+  m+='Invoice: *'+d.num+'*  |  Date: '+fdate(d.date)+'\nDue: '+fdate(d.due)+'  |  Status: *'+d.status+'*\n\n';
+  m+='Customer: *'+d.name+'*\n';
+  if(d.phone)m+='Phone: '+d.phone+'\n';
+  m+='\n*Order Details:*\n';
+  d.items.forEach(i=>{if(!i.desc&&!i.price)return;m+='- '+(i.desc||'Item')+' x '+(i.qty||1)+' = ₹'+((i.qty||0)*(i.price||0)).toFixed(0)+'\n';});
+  m+='--------------------------------\n';
+  if(d.disc>0)m+='Discount: - ₹'+d.disc.toFixed(0)+'\n';
+  m+='*Total: ₹'+d.grand.toFixed(0)+'*\n\n';
+  m+='*Pay via UPI:*\n'+upiUrl(d.grand,d.name,d.num)+'\nUPI ID: *'+UPI+'*\n';
+  if(d.notes)m+='\nNote: '+d.notes+'\n';
+  m+='\nThank you for choosing Lakshmi Designers!';
+  const p=(d.phone||'').replace(/\D/g,'');
+  window.open(p?'https://wa.me/91'+p+'?text='+encodeURIComponent(m):'https://wa.me/?text='+encodeURIComponent(m),'_blank');
+}
+
+function clearForm(){
+  ['cust-name','cust-phone','notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('disc').value='0';
+  document.getElementById('inv-status').value='Pending';
+  items=[];addItem();toast('Cleared!');
+}
+</script>
+</body>
+</html>
