@@ -145,12 +145,12 @@ async function generatePDF(){
   // HEADER — single flat color, no gradient
   const BG=[ 62, 10, 50 ]; // one deep purple only
   doc.setFillColor(...BG);
-  doc.rect(0,0,W,66,'F');
+  doc.rect(0,0,W,78,'F');
 
   // Gold border — top, bottom, sides
   doc.setDrawColor(212,175,85);doc.setLineWidth(0.6);
   doc.line(0,1.5,W,1.5);
-  doc.line(0,64.5,W,64.5);
+  doc.line(0,76.5,W,76.5);
   doc.setLineWidth(0.25);
   doc.line(7,3,7,62);
   doc.line(W-7,3,W-7,62);
