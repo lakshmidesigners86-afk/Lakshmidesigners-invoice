@@ -250,9 +250,23 @@ async function generatePDF(){
   doc.text('AMOUNT',L+CW,y+7.5,{align:'right'});
   y+=11;
 
-  const valid=d.items.filter(i=>i.desc||i.price);
+ const valid=d.items.filter(i=>i.desc||i.price);
   valid.forEach((item,idx)=>{
     const rh=11;
+    // Check if we need a new page for this row
+    if(y + rh + 18 > H) {
+      doc.addPage();
+      y = 20;
+      // Redraw table header on new page
+      doc.setFillColor(...BG);
+      doc.rect(L,y,CW,11,'F');
+      doc.setTextColor(255,225,170);doc.setFontSize(8);doc.setFont('helvetica','bold');
+      doc.text('DESCRIPTION',L+3,y+7.5);
+      doc.text('QTY',L+108,y+7.5,{align:'right'});
+      doc.text('UNIT PRICE',L+142,y+7.5,{align:'right'});
+      doc.text('AMOUNT',L+CW,y+7.5,{align:'right'});
+      y+=11;
+    }
     doc.setFillColor(idx%2===0?252:255,idx%2===0?244:255,idx%2===0?249:255);
     doc.rect(L,y,CW,rh,'F');
     doc.setDrawColor(225,200,215);doc.setLineWidth(0.15);
